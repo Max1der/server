@@ -111,14 +111,10 @@ app.get('/problems', checkAuth, async (req, res) => {
         if (!initiator.isAdmin) {
             return res.status(403).json({ msg: 'Вы не являетесь администратором' })
         }
-        let problems = await ProblemModel.find({
-            "$or": [{
-                "status": "Ожидает"
-            }, {
-                "status": "В работе"
-            }]
-        }
-        ).populate('user')
+        let problems = await ProblemModel.find().populate(['user','resolver'])
+        problems.sort((a,b)=>{
+            return new Date(b.createdAt)-new Date(a.createdAt)
+        })
         return res.json(problems)
     } catch (err) {
         console.log(err);
@@ -144,7 +140,7 @@ app.post('/problems', checkAuth, async (req, res) => {
         res.status(500);
     }
 })
-
+//
 app.put('/problems/:id', checkAuth, async (req, res) => {
     try {
         // console.log(req.body.status)
@@ -154,8 +150,9 @@ app.put('/problems/:id', checkAuth, async (req, res) => {
         }
         let problem = await ProblemModel.findById(req.params.id)
         problem.status = req.body.status
+        problem.resolver = req.userId
         await problem.save()
-        return res.json({ msg: 'Статус обновлен' })
+        return res.json({ msg: 'Статус обновлен', resolver:initiator.fio })
     } catch (err) {
         console.log(err);
         res.status(500);

@@ -17,6 +17,10 @@ const ProblemSchema = new mongoose.Schema(
             status:{
                 type: String,
                 default: 'Ожидает',
+            },
+            resolver:{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
             }
     },
     {
